@@ -1,0 +1,6 @@
+[submodule "waf-autooptions"]
+	path = wafautooptions
+	url = https://github.com/LADI/waf-autooptions.git
+[submodule "waf-toolchain-flags"]
+	path = waftoolchainflags
+	url = https://github.com/LADI/waf-toolchain-flags.git
