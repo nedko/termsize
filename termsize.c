@@ -15,9 +15,9 @@
 #include <stdbool.h>
 #include <stdlib.h>
 #include <limits.h>
+#include <errno.h>
 
 int fd;
-const char * cmd;
 char buf[256];
 
 struct curpos
@@ -26,20 +26,41 @@ struct curpos
   int col;
 };
 
+void write_asciiz(const char * str)
+{
+  ssize_t sret;
+  size_t len;
+
+  len = strlen(str);
+loop:
+  sret = write(fd, str, len);
+  if (sret == -1) abort();
+  str += (size_t)sret;
+  len -= (size_t)sret;
+  if (len > 0) goto loop;
+}
 
 void get_cursor_position(struct curpos * pos)
 {
   int i;
   char * p;
+  ssize_t sret;
 
-  cmd = "\033[6n";
-  write(fd, cmd, strlen(cmd));
+  write_asciiz("\033[6n");
 
   i = 0;
 loop:
   if (i == sizeof(buf)) abort();
 
-  read(fd, buf + i, 1);
+  sret = read(fd, buf + i, 1);
+  if (sret == -1)
+  {
+    if (errno == EINTR) goto loop;
+    abort();
+  }
+  if (sret == 0) goto loop;
+  if (sret != 1) abort();
+
   if (buf[i] == 'R')
   {
     buf[i] = 0;
@@ -61,7 +82,7 @@ loop:
 void set_cursor_position(const struct curpos * pos)
 {
   sprintf(buf, "\033[%d;%dH", pos->row, pos->col);
-  write(fd, buf, strlen(buf));
+  write_asciiz(buf);
 }
 
 void get_terminal_size(struct curpos * size)
@@ -82,7 +103,6 @@ int main(void)
 {
   struct termios tty_save;
   struct termios tty;
-  const char * cmd;
   struct curpos size;
   struct winsize winsize;
 
