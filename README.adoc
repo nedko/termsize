@@ -1,0 +1,9 @@
+= termsize =
+
+'termsize' is a simple program to adjust number of 'cols' and 'rows' associated with
+controlling terminal '/dev/tty' so to match the actual size of attached terminal (emulator window).
+
+Typical/intended use is when attaching over UART/RS232 to a remote computer that initially
+has default number cols and rows (often 80x25). Running the program on the
+remote computer adjusts the number of cols and rows, for its local tty device,
+to current number of cols and rows.
